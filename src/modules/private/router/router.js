@@ -1,10 +1,15 @@
 const router = require("express").Router();
 const controller = require("../controller/controller");
 const loginController = require("../controller/loginController");
-const axios = require("axios");
 
-router.post("/create", async (req, res) => {
-  const result = await controller.createRequest(req.body);
+router.post("/createEnvelope", async (req, res) => {
+  console.log("Creating access token...")
+  const jwtToken = await loginController.createJwtToken();
+
+  const accessToken = await loginController.createAccessToken(jwtToken)
+
+  console.log("Creating envelope...")
+  const result = await controller.createRequest(req.body, accessToken);
   if (result.status !== 200) {
     res.status(result.status);
     res.send({ error: result.error });
@@ -13,6 +18,9 @@ router.post("/create", async (req, res) => {
       status: "sent",
       envelopeId: result.envelopeId,
     });
+
+  console.log(`Envelope created successfully, id: ${result.envelopeId}`)
+    
 });
 
 router.get(`/access`, async (req, res) => {
@@ -21,7 +29,14 @@ router.get(`/access`, async (req, res) => {
 });
 
 router.get('/check', async (req, res) => {
-  const result = await controller.getEnvelope(req.body);
+  console.log("Creating access token...")
+  const jwtToken = await loginController.createJwtToken();
+
+  const accessToken = await loginController.createAccessToken(jwtToken)
+  
+
+    console.log("Checking envelope status...")
+  const result = await controller.getEnvelope(req.body, accessToken);
   if (result.status !== 200) {
     res.status(result.status);
     res.send({ error: result.error });
@@ -29,19 +44,8 @@ router.get('/check', async (req, res) => {
     res.send({
       status: result.data.status,
     });
+    console.log(`Envelope status: ${result.data.status}`)
 })
-
-router.post("/login", async (req, res) => {
-  const token = await loginController.createToken(req);
-
-  axios({
-    method: "post",
-    url: "https://account-d.docusign.com/oauth/token",
-    data: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${token.token}`,
-  })
-    .then((response) => res.send(response.data))
-    .catch((e) => console.log(e));
-});
 
 module.exports = router;
 

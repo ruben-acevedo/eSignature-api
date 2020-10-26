@@ -3,19 +3,24 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const key = "/Users/rubenacevedo/Documents/Projects/serverless/DocuSign/private.key";
 const moment = require("moment");
+const iss = process.env.INTEGRATION_KEY
+const sub = process.env.USERNAME_ID
+const aud = process.env.AUD
+const scope = process.env.SCOPE 
 
-const getData = (req) => {
+
+const getData = () => {
   const now = moment(),
     iat = now.unix(),
     exp = now.add(9 * 60 + 30, "s").unix();
 
   const data = {
-    iss: req.body.iss,
-    sub: req.body.sub,
+    iss: iss,
+    sub: sub,
     iat: iat,
     exp: exp,
-    aud: req.body.aud,
-    scope: req.body.scope,
+    aud: aud,
+    scope: scope,
   };
 
   return data;

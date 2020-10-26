@@ -1,8 +1,10 @@
+require("dotenv").config();
 const helper = require("../helper/helper");
 const basePath = "https://demo.docusign.net/restapi";
 const docusign = require("docusign-esign");
+const accountId = process.env.ACCOUNT_ID
 
-const createRequest = async (request) => {
+const createRequest = async (request, accessToken) => {
   const validateRequest = await helper.validateRequest(request);
   if (validateRequest.status != 200) return validateRequest;
 
@@ -26,14 +28,14 @@ const createRequest = async (request) => {
   dsApiClient.setBasePath(basePath);
   dsApiClient.addDefaultHeader(
     "Authorization",
-    "Bearer " + request.accessToken
+    "Bearer " + accessToken
   );
 
   let envelopesApi = new docusign.EnvelopesApi(dsApiClient),
     results = null;
 try {
 
-  results = await envelopesApi.createEnvelope(request.accountId, {
+  results = await envelopesApi.createEnvelope(accountId, {
     envelopeDefinition: envelope,
   });
   let envelopeId = results.envelopeId;
@@ -44,14 +46,15 @@ try {
 }
 };
 
-const getEnvelope = async (request) => {
+// check envelope status
+const getEnvelope = async (request, token) => {
   let dsApiClient = new docusign.ApiClient();
     dsApiClient.setBasePath(basePath);
-    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + request.accessToken);
+    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + token);
     let envelopesApi = new docusign.EnvelopesApi(dsApiClient)
       , results = null;
 
-    results = await envelopesApi.getEnvelope(request.accountId, request.envelopeId, null);
+    results = await envelopesApi.getEnvelope(accountId, request.envelopeId, null);
     return {status: 200, data: results}
 }
 

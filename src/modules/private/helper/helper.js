@@ -9,8 +9,6 @@ const requestSchema = Joi.object({
   signerName: Joi.string().min(3).max(50).required(),
   ccEmail: Joi.string().min(5).max(50).required(),
   ccName: Joi.string().min(3).max(50).required(),
-  accessToken: Joi.string().min(3).max(1000).required(),
-  accountId: Joi.string().min(3).max(1000).required(),
 });
 
 const validateRequest = (request) => {
