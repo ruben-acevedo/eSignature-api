@@ -20,6 +20,17 @@ router.get(`/access`, async (req, res) => {
   res.send("OK");
 });
 
+router.get('/check', async (req, res) => {
+  const result = await controller.getEnvelope(req.body);
+  if (result.status !== 200) {
+    res.status(result.status);
+    res.send({ error: result.error });
+  } else
+    res.send({
+      status: result.data.status,
+    });
+})
+
 router.post("/login", async (req, res) => {
   const token = await loginController.createToken(req);
 
@@ -35,5 +46,4 @@ router.post("/login", async (req, res) => {
 module.exports = router;
 
 // link to get auth
-// https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation&client_id=68f27216-b50f-4035-ade9-66b24099b9f4&redirect_uri=http://localhost:5000/access
-
+// https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation&client_id=&redirect_uri=http://localhost:5000/access
