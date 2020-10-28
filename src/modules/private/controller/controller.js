@@ -44,9 +44,6 @@ try {
   });
   let envelopeId = results.envelopeId;
 
-
-  // from here is embedded signing
-
   console.log(`Envelope was created. EnvelopeId ${envelopeId}`);
 
     // embedded singing
