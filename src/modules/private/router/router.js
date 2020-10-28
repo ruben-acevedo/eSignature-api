@@ -10,16 +10,17 @@ router.post("/createEnvelope", async (req, res) => {
 
   console.log("Creating envelope...")
   const result = await controller.createRequest(req.body, accessToken);
-  if (result.status !== 200) {
-    res.status(result.status);
-    res.send({ error: result.error });
-  } else
-    res.send({
-      status: "sent",
-      envelopeId: result.envelopeId,
-    });
+  // if (result.status !== 200) {
+  //   res.status(result.status);
+  //   res.send({ error: result.error });
+  // } else
+  //   res.send({
+  //     status: "sent",
+  //     envelopeId: result.envelopeId,
+  //   });
 
-  console.log(`Envelope created successfully, id: ${result.envelopeId}`)
+  res.send(result)
+  // console.log(`Envelope created successfully, id: ${result.envelopeId}`)
     
 });
 
@@ -42,7 +43,7 @@ router.get('/check', async (req, res) => {
     res.send({ error: result.error });
   } else
     res.send({
-      status: result.data.status,
+      envelopeStatus: result.data.status,
     });
     console.log(`Envelope status: ${result.data.status}`)
 })

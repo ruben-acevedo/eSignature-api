@@ -1,14 +1,15 @@
+require("dotenv").config();
 const Joi = require("joi");
 const pdf =
   "/Users/rubenacevedo/Documents/Projects/serverless/DocuSign/World_Wide_Corp_lorem.pdf";
 const docusign = require("docusign-esign");
 const fs = require("fs");
+const returnUrl = process.env.RETURN_URL
+const signerId = process.env.SIGNER_ID
 
 const requestSchema = Joi.object({
   signerEmail: Joi.string().min(5).max(50).required(),
   signerName: Joi.string().min(3).max(50).required(),
-  ccEmail: Joi.string().min(5).max(50).required(),
-  ccName: Joi.string().min(3).max(50).required(),
 });
 
 const validateRequest = (request) => {
@@ -25,8 +26,6 @@ const requestObject = (request) => {
   return {
     signerEmail: request.signerEmail,
     signerName: request.signerName,
-    ccEmail: request.ccEmail,
-    ccName: request.ccName,
     status: "sent",
   };
 };
@@ -46,19 +45,27 @@ const getDocument = () => {
   return doc;
 };
 
-const createEnvelope = (envelopeArgs, document, recipient) => {
+const createEnvelope = (envelopeArgs, document, recipient, eventNotification) => {
   let envelope = new docusign.EnvelopeDefinition();
   envelope.emailSubject = "Please sign this document set";
   envelope.documents = [document];
   envelope.recipients = recipient;
   envelope.status = envelopeArgs.status;
+  // envelope.EventNotification = eventNotification
+
   return envelope;
 };
+
+const createEventNotification = () => {
+  let notification = new docusign.EventNotification()
+  notification.envelopeEventStatusCode = 'completed'
+  notification.url = 'https://enigmatic-reef-77313.herokuapp.com/create'
+  return notification
+}
 
 const createRecipient = (signer) => {
   let recipient = docusign.Recipients.constructFromObject({
     signers: [signer.signer],
-    carbonCopies: [signer.cc],
   });
   return recipient;
 };
@@ -67,17 +74,11 @@ const createSigner = (envelopeArgs) => {
   let signer = docusign.Signer.constructFromObject({
     email: envelopeArgs.signerEmail,
     name: envelopeArgs.signerName,
+    clientUserId: signerId,
     recipientId: "1",
-    routingOrder: "1",
   });
 
-  let cc = new docusign.CarbonCopy();
-  cc.email = envelopeArgs.ccEmail;
-  cc.name = envelopeArgs.ccName;
-  cc.routingOrder = "2";
-  cc.recipientId = "2";
-
-  const signerObj = { signer, cc };
+  const signerObj = {signer};
 
   return signerObj;
 };
@@ -98,6 +99,20 @@ const createTabs = (signer) => {
   return signer;
 };
 
+const createRecipientViewRequest = (args) => {
+  let viewRequest = new docusign.RecipientViewRequest();
+
+    viewRequest.returnUrl = returnUrl;
+    viewRequest.authenticationMethod = 'none';
+    viewRequest.email = args.signerEmail;
+    viewRequest.userName = args.signerName;
+    viewRequest.clientUserId = signerId;
+    viewRequest.pingFrequency = 600; // seconds
+    viewRequest.pingUrl = returnUrl; // optional setting
+
+    return viewRequest
+}
+
 module.exports = {
   validateRequest,
   requestObject,
@@ -107,4 +122,6 @@ module.exports = {
   createTabs,
   createRecipient,
   encoder,
+  createEventNotification,
+  createRecipientViewRequest
 };

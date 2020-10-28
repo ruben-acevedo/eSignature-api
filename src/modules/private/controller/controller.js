@@ -18,10 +18,13 @@ const createRequest = async (request, accessToken) => {
 
   const recipient = await helper.createRecipient(signerWtabs);
 
+  const eventNotification = await helper.createEventNotification()
+
   const envelope = await helper.createEnvelope(
     envelopeArgs,
     document,
-    recipient
+    recipient,
+    eventNotification
   );
 
   let dsApiClient = new docusign.ApiClient();
@@ -35,16 +38,30 @@ const createRequest = async (request, accessToken) => {
     results = null;
 try {
 
+  // creates envelope
   results = await envelopesApi.createEnvelope(accountId, {
     envelopeDefinition: envelope,
   });
   let envelopeId = results.envelopeId;
 
-  return { status: 200, envelopeId: envelopeId };
-} catch (error) {
-  console.log(error)
+
+  // from here is embedded signing
+
+  console.log(`Envelope was created. EnvelopeId ${envelopeId}`);
+
+    // embedded singing
+    let viewRequest = helper.createRecipientViewRequest(envelopeArgs);
+    
+    results = await envelopesApi.createRecipientView(accountId, envelopeId,
+        {recipientViewRequest: viewRequest});
+    console.log("Embedded signing created.")
+
+    return ({envelopeId: envelopeId, redirectUrl: results.url})
 }
-};
+ catch (error) {
+  console.log(error)
+  }
+}
 
 // check envelope status
 const getEnvelope = async (request, token) => {
