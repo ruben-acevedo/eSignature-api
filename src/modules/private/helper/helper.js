@@ -1,11 +1,10 @@
 require("dotenv").config();
 const Joi = require("joi");
-const pdf =
-  "/Users/rubenacevedo/Documents/Projects/serverless/DocuSign/World_Wide_Corp_lorem.pdf";
+const template = process.env.TEMPLATE;
 const docusign = require("docusign-esign");
 const fs = require("fs");
 const returnUrl = process.env.RETURN_URL
-const signerId = process.env.SIGNER_ID
+const user = process.env.USERNAME_ID
 
 const requestSchema = Joi.object({
   signerEmail: Joi.string().min(5).max(50).required(),
@@ -38,7 +37,7 @@ const encoder = (fileName) => {
 
 const getDocument = () => {
   let doc = new docusign.Document();
-  doc.documentBase64 = encoder(pdf);
+  doc.documentBase64 = encoder(template);
   doc.name = "Order of acknowledgment";
   doc.fileExtension = "pdf";
   doc.documentId = "1";
@@ -106,9 +105,7 @@ const createRecipientViewRequest = (args) => {
     viewRequest.authenticationMethod = 'none';
     viewRequest.email = args.signerEmail;
     viewRequest.userName = args.signerName;
-    viewRequest.clientUserId = signerId;
-    viewRequest.pingFrequency = 600; // seconds
-    viewRequest.pingUrl = returnUrl; // optional setting
+    viewRequest.clientUserId = user;
 
     return viewRequest
 }

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
-const key = "/Users/rubenacevedo/Documents/Projects/serverless/DocuSign/private.key";
+const key = process.env.PRIVATE_KEY
 const moment = require("moment");
 const iss = process.env.INTEGRATION_KEY
 const sub = process.env.USERNAME_ID

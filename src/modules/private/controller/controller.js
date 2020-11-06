@@ -1,6 +1,6 @@
 require("dotenv").config();
 const helper = require("../helper/helper");
-const basePath = "https://demo.docusign.net/restapi";
+const basePath = process.env.BASE_PATH;
 const docusign = require("docusign-esign");
 const accountId = process.env.ACCOUNT_ID
 
@@ -60,19 +60,6 @@ try {
   }
 }
 
-// check envelope status
-const getEnvelope = async (request, token) => {
-  let dsApiClient = new docusign.ApiClient();
-    dsApiClient.setBasePath(basePath);
-    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + token);
-    let envelopesApi = new docusign.EnvelopesApi(dsApiClient)
-      , results = null;
-
-    results = await envelopesApi.getEnvelope(accountId, request.envelopeId, null);
-    return {status: 200, data: results}
-}
-
 module.exports = {
-  createRequest,
-  getEnvelope
+  createRequest
 };
